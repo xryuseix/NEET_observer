@@ -1,6 +1,6 @@
 import cv2
 import datetime
-
+import googleDriveAPI as googleAPI
 
 # 監視カメラ
 class SurveillanceCamera:
@@ -60,6 +60,3 @@ class SurveillanceCamera:
         img = self.__cam.read()[1]
         img = cv2.resize(img, (600, 400))
         return img
-
-camera = SurveillanceCamera()
-camera.sensor()
