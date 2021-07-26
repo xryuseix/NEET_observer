@@ -1,4 +1,5 @@
 import cv2
+import sys
 import datetime
 import googleDriveAPI as googleAPI
 
@@ -28,46 +29,51 @@ class SurveillanceCamera:
     def sensor(self):
         # カメラのキャプチャを開始
         img1 = img2 = img3 = self.__get_image()
-        while True:
-            # Enterキーが押されたら終了
-            if cv2.waitKey(1) == 13:
-                break
-            # 差分を調べる
-            diff = self.__check_image(img1, img2, img3)
-            # 差分がthの値以上なら動きがあったと判定
-            cnt = cv2.countNonZero(diff)
-            if cnt > self.__threshold or self.__recording:
-                cv2.imshow("PUSH ENTER KEY", img3)
+        try:
+            while True:
+                # Enterキーが押されたら終了
+                if cv2.waitKey(1) == 13:
+                    break
+                # 差分を調べる
+                diff = self.__check_image(img1, img2, img3)
+                # 差分がthの値以上なら動きがあったと判定
+                cnt = cv2.countNonZero(diff)
+                if cnt > self.__threshold or self.__recording:
+                    cv2.imshow("PUSH ENTER KEY", img3)
 
-                dt_now = datetime.datetime.now()
-                filename = f"{self.__save_path}/{dt_now.year}-{dt_now.month:02}-{dt_now.day:02}_{dt_now.hour:02}:{dt_now.minute:02}:{dt_now.second:06}_{dt_now.microsecond}"
+                    dt_now = datetime.datetime.now()
+                    filename = f"{self.__save_path}/{dt_now.year}-{dt_now.month:02}-{dt_now.day:02}_{dt_now.hour:02}:{dt_now.minute:02}:{dt_now.second:06}_{dt_now.microsecond}"
 
-                # 録画開始
-                if not self.__recording:
-                    print("Human detected!")
-                    self.__recording = True
-                    self.__video = cv2.VideoWriter(
-                        f"{filename}.mp4",
-                        self.__fourcc,
-                        self.__camera_fps,
-                        (self.__camera_width, self.__camera_height),
-                    )
-                    self.__recording_start_time = dt_now
+                    # 録画開始
+                    if not self.__recording:
+                        print("Human detected!")
+                        self.__recording = True
+                        self.__video = cv2.VideoWriter(
+                            f"{filename}.mp4",
+                            self.__fourcc,
+                            self.__camera_fps,
+                            (self.__camera_width, self.__camera_height),
+                        )
+                        self.__recording_start_time = dt_now
 
-                print("Recording...")
-                self.__video.write(img3)
+                    print("Recording...")
+                    self.__video.write(img3)
 
-                # 録画終了
-                if (dt_now - self.__recording_start_time).seconds > 5:
-                    self.__recording = False
-                    self.__video.release()
-                    print("Record is finished!")
+                    # 録画終了
+                    if (dt_now - self.__recording_start_time).seconds > 5:
+                        self.__recording = False
+                        self.__video.release()
+                        print("Record is finished!")
 
-                # cv2.imwrite(f"{filename}.jpg", img3)
-            else:
-                cv2.imshow("PUSH ENTER KEY", diff)
-            # 比較用の画像を保存
-            img1, img2, img3 = (img2, img3, self.__get_image())
+                    # cv2.imwrite(f"{filename}.jpg", img3)
+                else:
+                    cv2.imshow("PUSH ENTER KEY", diff)
+                # 比較用の画像を保存
+                img1, img2, img3 = (img2, img3, self.__get_image())
+        except KeyboardInterrupt:
+            self.__del__()
+            sys.exit()
+            pass
 
     # フレーム間差分法を用いて画像に動きを調べる
     def __check_image(self, img1, img2, img3):
