@@ -1,3 +1,4 @@
+import datetime
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 
@@ -15,7 +16,7 @@ class GoogleDriveAPI:
                 "parents": [{"kind": "drive#fileLink", "id": self.__folder_id}],
             }
         )
-        f.SetContentFile(file_name)
+        f.SetContentFile(datetime.datetime.now().isoformat(timespec='microseconds'))
         f.Upload()
 
 if __name__ == "__main__":

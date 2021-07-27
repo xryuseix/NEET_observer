@@ -5,7 +5,7 @@ import googleDriveAPI as googleAPI
 
 # 監視カメラ
 class SurveillanceCamera:
-    def __init__(self):
+    def __init__(self, credentials):
         self.__save_path = "./capture"  # 保存パス
         self.__threshold = 10  # 閾値
         # カメラの開始
@@ -15,6 +15,7 @@ class SurveillanceCamera:
         self.__camera_width = int(self.__cam.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.__camera_height = int(self.__cam.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.__camera_fps = 30
+        self.__drive = googleAPI.GoogleDriveAPI(credentials)
         print("Setup finished!")
 
     def __del__(self):
@@ -41,31 +42,35 @@ class SurveillanceCamera:
                 if cnt > self.__threshold or self.__recording:
                     cv2.imshow("PUSH ENTER KEY", img3)
 
-                    dt_now = datetime.datetime.now()
-                    filename = f"{self.__save_path}/{dt_now.year}-{dt_now.month:02}-{dt_now.day:02}_{dt_now.hour:02}:{dt_now.minute:02}:{dt_now.second:06}_{dt_now.microsecond}"
-
                     # 録画開始
                     if not self.__recording:
                         print("Human detected!")
                         self.__recording = True
+                        dt_now = datetime.datetime.now()
+                        self.__filename = dt_now.strftime(
+                            f"{self.__save_path}/%Y-%m-%d_%H:%M:%S_%f.mp4"
+                        )
                         self.__video = cv2.VideoWriter(
-                            f"{filename}.mp4",
+                            self.__filename,
                             self.__fourcc,
                             self.__camera_fps,
                             (self.__camera_width, self.__camera_height),
                         )
                         self.__recording_start_time = dt_now
 
-                    print("Recording...")
+                    print(
+                        f"\rRecording...{datetime.datetime.now().isoformat(timespec='microseconds')}",
+                        end="",
+                    )
                     self.__video.write(img3)
 
                     # 録画終了
+                    dt_now = datetime.datetime.now()
                     if (dt_now - self.__recording_start_time).seconds > 5:
                         self.__recording = False
                         self.__video.release()
-                        print("Record is finished!")
-
-                    # cv2.imwrite(f"{filename}.jpg", img3)
+                        print("\nRecord is finished!")
+                        self.__drive.upload(self.__filename)
                 else:
                     cv2.imshow("PUSH ENTER KEY", diff)
                 # 比較用の画像を保存
@@ -99,5 +104,13 @@ class SurveillanceCamera:
 
 
 if __name__ == "__main__":
-    camera = SurveillanceCamera()
+
+    def read_json_file(file_name):
+        import json
+
+        with open(file_name) as f:
+            return json.load(f)
+
+    credentials = read_json_file("secret.json")
+    camera = SurveillanceCamera(credentials)
     camera.sensor()
