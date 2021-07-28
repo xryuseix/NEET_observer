@@ -11,13 +11,16 @@ class GoogleDriveAPI:
         self.__folder_id = credentials["drive"]["folder_id"]  # NEET_observer フォルダ
 
     def upload(self, file_name):
-        f = self.__drive.CreateFile(
-            {
-                "parents": [{"kind": "drive#fileLink", "id": self.__folder_id}],
-            }
-        )
-        f.SetContentFile(datetime.datetime.now().isoformat(timespec='microseconds'))
-        f.Upload()
+        try:
+            f = self.__drive.CreateFile(
+                {
+                    "parents": [{"kind": "drive#fileLink", "id": self.__folder_id}],
+                }
+            )
+            f.SetContentFile(file_name)
+            f.Upload()
+        except KeyboardInterrupt:
+            pass
 
 if __name__ == "__main__":
     def read_json_file(file_name):

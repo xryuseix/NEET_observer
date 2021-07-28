@@ -2,6 +2,7 @@ import cv2
 import sys
 import datetime
 import googleDriveAPI as googleAPI
+from multiprocessing import Process
 
 # 監視カメラ
 class SurveillanceCamera:
@@ -16,16 +17,19 @@ class SurveillanceCamera:
         self.__camera_height = int(self.__cam.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.__camera_fps = 30
         self.__drive = googleAPI.GoogleDriveAPI(credentials)
+        self.__process_list = []  # googleAPIプロセスを管理するリスト
         print("Setup finished!")
 
     def __del__(self):
         # 録画の終了
         if self.__recording:
-            self.__recording = False
-            self.__video.release()
+            self.__finish_recording()
         # カメラの終了
         self.__cam.release()
         cv2.destroyAllWindows()
+        # プロセスの終了待ち
+        for prosess in self.__process_list:
+            prosess.join()
 
     def sensor(self):
         # カメラのキャプチャを開始
@@ -67,17 +71,12 @@ class SurveillanceCamera:
                     # 録画終了
                     dt_now = datetime.datetime.now()
                     if (dt_now - self.__recording_start_time).seconds > 5:
-                        self.__recording = False
-                        self.__video.release()
-                        print("\nRecord is finished!")
-                        self.__drive.upload(self.__filename)
+                        self.__finish_recording()
                 else:
                     cv2.imshow("PUSH ENTER KEY", diff)
                 # 比較用の画像を保存
                 img1, img2, img3 = (img2, img3, self.__get_image())
         except KeyboardInterrupt:
-            self.__del__()
-            sys.exit()
             pass
 
     # フレーム間差分法を用いて画像に動きを調べる
@@ -101,6 +100,21 @@ class SurveillanceCamera:
     def __get_image(self):
         _, img = self.__cam.read()
         return img
+    
+    # 録画を終了する
+    def __finish_recording(self):
+        self.__recording = False
+        self.__video.release()
+        process = Process(
+            target=self.__drive.upload,
+            args={
+                self.__filename
+            },
+        )
+        process.start()
+        self.__process_list.append(process)
+        # self.__drive.upload(self.__filename)
+        print("\nRecord is finished!")
 
 
 if __name__ == "__main__":
@@ -114,3 +128,4 @@ if __name__ == "__main__":
     credentials = read_json_file("secret.json")
     camera = SurveillanceCamera(credentials)
     camera.sensor()
+    del camera
