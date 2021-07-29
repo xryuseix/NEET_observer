@@ -21,8 +21,24 @@ class GoogleDriveAPI:
             f.Upload()
         except KeyboardInterrupt:
             pass
+        except Exception as e:
+            print(f"\n[ERROR] {e}")
 
 if __name__ == "__main__":
+    gauth = GoogleAuth()
+    gauth.CommandLineAuth()
+    drive = GoogleDrive(gauth)
+    
+    response = drive.files().list(spaces='appDataFolder',
+                                      fields='nextPageToken, files(id, name)',
+                                      pageSize=10).execute()
+    for file in response.get('files', []):
+        print('Found file: %s (%s)' % (file.get('name'), file.get('id')))
+    
+    # file_id = drive.ListFile({'q': 'title = "./capture/2021-07-29_22:56:05_827354.mp4"'}).GetList()[0]['id']
+    # f = drive.CreateFile({'id': file_id})
+    # f.Trash()
+    exit()
     def read_json_file(file_name):
         import json
         with open(file_name) as f:
