@@ -1,12 +1,13 @@
 /** @format */
 
-//HTTP GETをハンドリングする
-function doGet(e) {
+// 部屋の最新の状態を取得する
+function getLatestState(e) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("latest");
-  var range = sheet.getRange("A1");
-  var value = range.getValue().split(",");
+  const range = sheet.getRange("A1");
+  const value = range.getValue().split(",");
 
-  let json = {
+  const json = {
+    state: "ok",
     date: value[0], //日付
     temp: value[1], //温度
     RH: value[2], //湿度
@@ -16,4 +17,21 @@ function doGet(e) {
   return ContentService.createTextOutput()
     .setMimeType(ContentService.MimeType.JSON)
     .setContent(JSON.stringify(json));
+}
+
+// HTTP GETをハンドリングする
+function doGet(e) {
+  const type = e.parameter.type;
+  if (type == "latest") {
+    return getLatestState(e);
+  } else {
+    return ContentService.createTextOutput()
+      .setMimeType(ContentService.MimeType.JSON)
+      .setContent(
+        JSON.stringify({
+          state: "error",
+          error: "Make sure you set the parameters correctly.",
+        })
+      );
+  }
 }
