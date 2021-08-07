@@ -1,3 +1,4 @@
+# coding: utf-8
 import datetime
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
@@ -24,9 +25,12 @@ class GoogleDriveAPI:
         except Exception as e:
             print(f"\n[ERROR] {e}")
 
+
 if __name__ == "__main__":
+
     def read_json_file(file_name):
         import json
+
         with open(file_name) as f:
             return json.load(f)
 

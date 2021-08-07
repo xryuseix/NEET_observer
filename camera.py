@@ -1,5 +1,7 @@
+# coding: utf-8
 import cv2
 import sys
+import os
 import datetime
 import googleDriveAPI as googleAPI
 from multiprocessing import Process
@@ -7,7 +9,7 @@ from multiprocessing import Process
 # 監視カメラ
 class SurveillanceCamera:
     def __init__(self, credentials):
-        self.__save_path = "./capture"  # 保存パス
+        self.__save_path = "capture"  # 保存パス
         self.__threshold = 10  # 閾値
         # カメラの開始
         self.__cam = cv2.VideoCapture(0)
@@ -51,8 +53,14 @@ class SurveillanceCamera:
                         print("Human detected!")
                         self.__recording = True
                         dt_now = datetime.datetime.now()
-                        self.__filename = dt_now.strftime(
-                            f"{self.__save_path}/%Y-%m-%d_%H:%M:%S_%f.mp4"
+                        self.__filename = (
+                            dt_now.strftime(
+                                f"{self.__save_path}/%Y-%m-%d_%H:%M:%S_%f.mp4"
+                            )
+                            if os.name == "posix"
+                            else dt_now.strftime(
+                                f"{self.__save_path}\\%Y-%m-%d_%H-%M-%S_%f.mp4"
+                            )
                         )
                         self.__video = cv2.VideoWriter(
                             self.__filename,
@@ -100,20 +108,17 @@ class SurveillanceCamera:
     def __get_image(self):
         _, img = self.__cam.read()
         return img
-    
+
     # 録画を終了する
     def __finish_recording(self):
         self.__recording = False
         self.__video.release()
         process = Process(
             target=self.__drive.upload,
-            args={
-                self.__filename
-            },
+            args={self.__filename},
         )
         process.start()
         self.__process_list.append(process)
-        # self.__drive.upload(self.__filename)
         print("\nRecord is finished!")
 
 
