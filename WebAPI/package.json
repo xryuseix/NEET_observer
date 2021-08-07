@@ -1,0 +1,22 @@
+{
+  "name": "NEET_obserber",
+  "version": "1.0.0",
+  "main": "dist/main.js",
+  "engines": {
+    "node": "14.17.x",
+    "npm": "7.6.3"
+  },
+  "license": "MIT",
+  "scripts": {
+    "start": "node dist/main.js",
+    "dev": "nodemon dist/main.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.13",
+    "@types/node": "^16.4.13",
+    "nodemon": "^2.0.12"
+  }
+}
