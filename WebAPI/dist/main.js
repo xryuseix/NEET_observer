@@ -5,9 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-// import { Request, Response } from "express";
+const fs_1 = __importDefault(require("fs"));
 const app = express_1.default();
-// jsonデータを扱う
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 // サーバー接続
@@ -28,12 +27,23 @@ app.get("/", (req, res) => {
     "data": base64 movie data
 }
 */
-app.post("/post", (req, res) => {
-    if (req.body.key != "PASSWORD") {
-        res.status(401).send({ ERROR: "invalid password" });
-    }
-    else {
-        res.status(200).send({ A: req.body.name });
-    }
+const auth = require("./auth");
+app.use(auth);
+const multer = require("multer");
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, "./uploads");
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.originalname);
+    },
+});
+const upload = multer({ storage: storage });
+app.post("/upload", upload.single("file"), (req, res) => {
+    const filename = req.file.originalname;
+    const file = req.file;
+    console.log(file);
+    const content = fs_1.default.readFileSync(req.file.path, "utf-8");
+    res.send(filename + ": uploaded ***\n");
 });
 //# sourceMappingURL=main.js.map

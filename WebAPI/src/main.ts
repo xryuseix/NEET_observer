@@ -1,11 +1,10 @@
 /** @format */
 
 import express from "express";
-import { parse } from "path/posix";
-// import { Request, Response } from "express";
+import { Buffer } from "buffer";
+import fs from "fs";
 
 const app = express();
-// jsonデータを扱う
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -29,10 +28,26 @@ app.get("/", (req, res) => {
     "data": base64 movie data
 }
 */
-app.post("/post", (req: express.Request, res: express.Response) => {
-  if (req.body.key != "PASSWORD") {
-    res.status(401).send({ ERROR: "invalid password" });
-  } else {
-    res.status(200).send({ A: req.body.name });
-  }
+const auth = require("./auth");
+app.use(auth);
+const multer = require("multer");
+const storage = multer.diskStorage({
+  destination: function (req: any, file: any, cb: any) {
+    cb(null, "./uploads");
+  },
+  filename: function (req: any, file: any, cb: any) {
+    cb(null, file.originalname);
+  },
 });
+const upload = multer({ storage: storage });
+app.post(
+  "/upload",
+  upload.single("file"),
+  (req: express.Request, res: express.Request) => {
+    const filename = req.file.originalname;
+    const file = req.file;
+    console.log(file);
+    const content = fs.readFileSync(req.file.path, "utf-8");
+    res.send(filename + ": uploaded ***\n");
+  }
+);
