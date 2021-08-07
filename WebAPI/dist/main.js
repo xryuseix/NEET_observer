@@ -19,9 +19,21 @@ app.listen(port, () => {
 app.get("/", (req, res) => {
     res.status(200).send({ message: "hello, api sever!" });
 });
-// 動画を取得するエンドポイントaaa
+/*
+動画を取得するエンドポイント
+以下の形式で受け取る
+{
+    "key": secret key,
+    "name": filename,
+    "data": base64 movie data
+}
+*/
 app.post("/post", (req, res) => {
-    const req_body = JSON.parse(Object.keys(req.body)[0]);
-    res.status(200).send({ "A": req_body.Name });
+    if (req.body.key != "PASSWORD") {
+        res.status(401).send({ ERROR: "invalid password" });
+    }
+    else {
+        res.status(200).send({ A: req.body.name });
+    }
 });
 //# sourceMappingURL=main.js.map
