@@ -12,7 +12,7 @@ class SurveillanceCamera:
     def __init__(self, credentials):
         self.__save_path = "capture"  # 保存パス
         self.__threshold = 10  # 閾値
-        self.__record_time = 2  # 録画時間
+        self.__record_time = 5  # 録画時間
         self.__credentials = credentials  # 認証情報
         self.__upload_movie = UploadMovie(self.__credentials) # 動画アップロード
         # カメラの開始
@@ -153,16 +153,3 @@ class UploadMovie:
         except KeyboardInterrupt:
             pass
 
-
-if __name__ == "__main__":
-
-    def read_json_file(file_name):
-        import json
-
-        with open(file_name) as f:
-            return json.load(f)
-
-    credentials = read_json_file("secret.json")
-    camera = SurveillanceCamera(credentials)
-    camera.sensor()
-    del camera
