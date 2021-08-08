@@ -11,3 +11,9 @@ conda env export -n python38 > NEET_env.yml
 ```
 conda env create -f=NEET_env.yml
 ``` -->
+
+起動
+```
+tsc -w
+npm run dev
+```
