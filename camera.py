@@ -1,9 +1,10 @@
 # coding: utf-8
 import cv2
-import sys
-import os
+import sys, os
+import json
 import datetime
-import googleDriveAPI as googleAPI
+import requests
+from requests.auth import HTTPBasicAuth
 from multiprocessing import Process
 
 # 監視カメラ
@@ -11,6 +12,9 @@ class SurveillanceCamera:
     def __init__(self, credentials):
         self.__save_path = "capture"  # 保存パス
         self.__threshold = 10  # 閾値
+        self.__record_time = 2  # 録画時間
+        self.__credentials = credentials  # 認証情報
+        self.__upload_movie = UploadMovie(self.__credentials) # 動画アップロード
         # カメラの開始
         self.__cam = cv2.VideoCapture(0)
         self.__recording = False  # 録画中かどうか
@@ -18,8 +22,7 @@ class SurveillanceCamera:
         self.__camera_width = int(self.__cam.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.__camera_height = int(self.__cam.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.__camera_fps = 30
-        self.__drive = googleAPI.GoogleDriveAPI(credentials)
-        self.__process_list = []  # googleAPIプロセスを管理するリスト
+        self.__process_list = []  # 動画をアップロードするプロセスを管理するリスト
         print("Setup finished!")
 
     def __del__(self):
@@ -78,7 +81,9 @@ class SurveillanceCamera:
 
                     # 録画終了
                     dt_now = datetime.datetime.now()
-                    if (dt_now - self.__recording_start_time).seconds > 5:
+                    if (
+                        dt_now - self.__recording_start_time
+                    ).seconds > self.__record_time:
                         self.__finish_recording()
                 else:
                     cv2.imshow("PUSH ENTER KEY", diff)
@@ -114,12 +119,39 @@ class SurveillanceCamera:
         self.__recording = False
         self.__video.release()
         process = Process(
-            target=self.__drive.upload,
+            target=self.__upload_movie.upload,
             args={self.__filename},
         )
         process.start()
         self.__process_list.append(process)
         print("\nRecord is finished!")
+        
+
+
+# 動画をアップロードする
+class UploadMovie:
+    def __init__(self, credentials):
+        self.__credentials = credentials
+
+    def upload(self, filename):
+        try:
+            print(f"\nvideo uploading...({filename})")
+            username = self.__credentials["heroku"]["username"]
+            password = self.__credentials["heroku"]["password"]
+            url = "https://neet-obserber.herokuapp.com/upload"
+            files = {
+                "file": (filename, open(filename, "rb")),
+            }
+            response = requests.post(url, files=files, auth=(username, password)).json()
+            try:
+                if response["status"] == "OK":
+                    print(f"video uploaded! ({filename})")
+                else:
+                    print(response["message"])
+            except:
+                print(f"[ERROR] upload error... ({filename})")
+        except KeyboardInterrupt:
+            pass
 
 
 if __name__ == "__main__":
