@@ -18,13 +18,12 @@ app.listen(port, () => {
 app.get("/", (req, res) => {
     const response = {
         status: "OK",
-        message: "hello, api sever!",
+        message: "Hello, NEET API Sever!",
     };
     res.status(200).send(response);
 });
 /*
 動画を取得するエンドポイント
-curl --basic -u $username:$password ${url}/upload -F "file=@${filename}"
 */
 const auth = require("./auth");
 app.use(auth);
@@ -39,15 +38,24 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 app.post("/upload", upload.single("file"), (req, res) => {
-    const filename = req.file.originalname;
-    const file = req.file;
-    console.log(file);
-    driveUpload(`uploads/${filename}`);
-    const response = {
-        status: "OK",
-        file: filename,
-    };
-    res.status(201).send(response);
+    try {
+        const filename = req.file.originalname;
+        const file = req.file;
+        console.log(file);
+        driveUpload(`uploads/${filename}`);
+        const response = {
+            status: "OK",
+            message: `Nice record of ${filename}!`,
+        };
+        res.status(201).send(response);
+    }
+    catch (e) {
+        const response = {
+            status: "ERROR",
+            message: "Internal Server Error",
+        };
+        res.status(500).send(response);
+    }
 });
 /*
 Google Driveへアップロード
