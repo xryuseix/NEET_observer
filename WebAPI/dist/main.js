@@ -16,7 +16,11 @@ app.listen(port, () => {
 });
 // テスト用のエンドポイント
 app.get("/", (req, res) => {
-    res.status(200).send({ message: "hello, api sever!\n" });
+    const response = {
+        status: "OK",
+        message: "hello, api sever!",
+    };
+    res.status(200).send(response);
 });
 /*
 動画を取得するエンドポイント
@@ -39,7 +43,11 @@ app.post("/upload", upload.single("file"), (req, res) => {
     const file = req.file;
     console.log(file);
     driveUpload(`uploads/${filename}`);
-    res.send(filename + ": uploaded\n");
+    const response = {
+        status: "OK",
+        file: filename,
+    };
+    res.status(201).send(response);
 });
 /*
 Google Driveへアップロード
