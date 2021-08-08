@@ -1,17 +1,19 @@
-const auth = require('basic-auth');
+/** @format */
+
+const auth = require("basic-auth");
+const fs = require("fs");
 
 interface StringKeyObject {
-  // 今回はstring
   [key: string]: any;
 }
-const admins: StringKeyObject = {
-  'testuser': { password: 'passwd' },
-};
+const admins: StringKeyObject = JSON.parse(
+  fs.readFileSync("./userList.json", "utf8")
+);
 
-module.exports = (req:any, res:any, next:any) => {
+module.exports = (req: any, res: any, next: any) => {
   const user = auth(req);
   if (!user || !admins[user.name] || admins[user.name].password !== user.pass) {
-    res.set('WWW-Authenticate', 'Basic realm="example"');
+    res.set("WWW-Authenticate", 'Basic realm="example"');
     return res.status(401).send();
   }
   return next();
