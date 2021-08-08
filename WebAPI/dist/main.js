@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const fs_1 = __importDefault(require("fs"));
+const googleAPI_1 = __importDefault(require("./googleAPI"));
 const app = express_1.default();
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
@@ -16,16 +16,11 @@ app.listen(port, () => {
 });
 // テスト用のエンドポイント
 app.get("/", (req, res) => {
-    res.status(200).send({ message: "hello, api sever!" });
+    res.status(200).send({ message: "hello, api sever!\n" });
 });
 /*
 動画を取得するエンドポイント
-以下の形式で受け取る
-{
-    "key": secret key,
-    "name": filename,
-    "data": base64 movie data
-}
+curl --basic -u $username:$password ${url}/upload -F "file=@${filename}"
 */
 const auth = require("./auth");
 app.use(auth);
@@ -43,7 +38,13 @@ app.post("/upload", upload.single("file"), (req, res) => {
     const filename = req.file.originalname;
     const file = req.file;
     console.log(file);
-    const content = fs_1.default.readFileSync(req.file.path, "utf-8");
-    res.send(filename + ": uploaded ***\n");
+    driveUpload(`uploads/${filename}`);
+    res.send(filename + ": uploaded\n");
 });
+/*
+Google Driveへアップロード
+*/
+const driveUpload = (filename) => {
+    googleAPI_1.default(filename);
+};
 //# sourceMappingURL=main.js.map

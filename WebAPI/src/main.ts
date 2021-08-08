@@ -3,6 +3,7 @@
 import express from "express";
 import { Buffer } from "buffer";
 import fs from "fs";
+import uploadFile from "./googleAPI";
 
 const app = express();
 app.use(express.json());
@@ -16,17 +17,12 @@ app.listen(port, () => {
 
 // テスト用のエンドポイント
 app.get("/", (req, res) => {
-  res.status(200).send({ message: "hello, api sever!" });
+  res.status(200).send({ message: "hello, api sever!\n" });
 });
 
 /*
 動画を取得するエンドポイント
-以下の形式で受け取る
-{
-    "key": secret key,
-    "name": filename,
-    "data": base64 movie data
-}
+curl --basic -u $username:$password ${url}/upload -F "file=@${filename}" 
 */
 const auth = require("./auth");
 app.use(auth);
@@ -47,7 +43,14 @@ app.post(
     const filename = req.file.originalname;
     const file = req.file;
     console.log(file);
-    const content = fs.readFileSync(req.file.path, "utf-8");
-    res.send(filename + ": uploaded ***\n");
+    driveUpload(`uploads/${filename}`);
+    res.send(filename + ": uploaded\n");
   }
 );
+
+/*
+Google Driveへアップロード
+*/
+const driveUpload = (filename: string) => {
+  uploadFile(filename);
+};
