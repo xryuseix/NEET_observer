@@ -65,11 +65,11 @@ API アクセスへの Basic 認証
 
 ### WebAPI/credentials.json
 
-Google Console でもらえるやつ
+Google Console で取得するGoogle APIの認証情報
 
 ### WebAPI/token.json
 
-Node.js 実行時に気づいたら生成されてるやつ
+Google APIトークン
 
 ### WebAPI/folderID.json
 
