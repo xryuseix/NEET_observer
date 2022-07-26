@@ -44,7 +44,7 @@ async function createFiles(auth: any, filename: string) {
 }
 
 /**
- * googlwAPIの認証を行う
+ * googleAPIの認証を行う
  */
 function authorize(credentials: any, callback: any, filename: string) {
   const { client_secret, client_id, redirect_uris } = credentials.installed;

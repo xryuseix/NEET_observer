@@ -7,6 +7,9 @@ import requests
 from requests.auth import HTTPBasicAuth
 from multiprocessing import Process
 
+ENDPOINT = "localhost:3001"
+# ENDPOINT = "https://neet-obserber.herokuapp.com"
+
 # 監視カメラ
 class SurveillanceCamera:
     def __init__(self, credentials):
@@ -138,7 +141,7 @@ class UploadMovie:
             print(f"\nvideo uploading...({filename})")
             username = self.__credentials["heroku"]["username"]
             password = self.__credentials["heroku"]["password"]
-            url = "https://neet-obserber.herokuapp.com/upload"
+            url = f"{ENDPOINT}/upload"
             files = {
                 "file": (filename, open(filename, "rb")),
             }
